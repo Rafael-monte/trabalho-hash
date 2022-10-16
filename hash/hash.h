@@ -29,7 +29,7 @@ struct dir_cell
 struct directory
 {
     //células do diretório, é um vetor com todas as células que vão apontar para os buckets com os dados
-    dir_cell* cells;
+    struct dir_cell* cells;
     //profundidade do diretório
     int dir_prof;
 };
