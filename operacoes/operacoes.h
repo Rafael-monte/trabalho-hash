@@ -16,6 +16,7 @@ FILE* __abrir_arquivo(const char FILE_NAME[]);
 
 //Constantes
 const char NOME_ARQUIVO_BUCKETS[]="buckets.dat";
+const char NOME_ARQUIVO_DIRETORIO[]="dir.dat";
 const char MODO_LEITURA[]="r";
 const char FLAG_IMPORTACAO[]="-i";
 const char FLAG_IMPRESSAO_DIRETORIO[]="-pd";

@@ -41,18 +41,20 @@ void init_function(FILE* arquivo_diretorio);
 
 void finish_function(FILE* arquivo_diretorio);
 
-int op_find(int key, int* found_bucket);
+int op_find(int key, int * rrn_found_bucket)
 
 int op_add(int key);
 
-int bk_add_key(struct bucket bucket, int key);
+int bk_add_key(struct bucket bk, int key);
 
-int bk_split(struct bucket bucket);
+int bk_split(struct bucket bk);
 
 int dir_double();
 
-int find_new_range(struct bucket bucket, int* new_start, int* new_range);
+void leia_bucket(int rrn_bucket, bucket * bk);
 
-int dir_ins_bucket(struct bucket bucket, int start, int end);
+int find_new_range(struct bucket old_bk, int* new_start, int* new_end);
+
+int dir_ins_bucket(int bucket_address, int start, int end);
 
 #endif

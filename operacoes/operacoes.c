@@ -4,7 +4,6 @@
 #include <math.h>
 #include "operacoes.h"
 #include "../logger/logger.c"
-#define M_LOG2E 1.44269504088896340736
 
 void iniciar_programa(int numero_argumentos, char** argumentos)
 {

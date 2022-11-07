@@ -5,6 +5,7 @@
 #include "hash.h"
 #define SUCCESS 1
 #define FAILURE 0
+#define DELIM_STR "|"
 
 //Definição das estruturas de dados como tipo, para facilitar a escrita de código
 typedef struct directory directory;
@@ -39,11 +40,7 @@ void init_function(FILE* arquivo_diretorio)
 {
     if (arquivo_diretorio != NULL) 
     {
-        // dir_cell[] diretorio
-        // directory diretorio;
-        // int dir_prof = log2(diretorio.dir_prof);
-        log_info("Funcao ainda nao inplementada", NULL);
-        return;
+        
     }
 
     diretorio.cells = malloc(sizeof(dir_cell));
@@ -53,14 +50,21 @@ void init_function(FILE* arquivo_diretorio)
 
 void finish_function(directory diretorio)
 {
-
+    FILE* arq_dir = __abrir_arquivo(NOME_ARQUIVO_DIRETORIO);
+    int numero_celulas = pow(2, diretorio.dir_prof);
+    for (int i = 0; i < numero_celulas; i++) 
+    {
+        fwrite(&diretorio.cells[i].bucket_ref, sizeof(int), 1, arq_dir);
+        fputs(DELIM_STR, arq_dir);
+    }
 }
 
-void leia_bucket(int rrn_bucket, bucket * bk){
+void leia_bucket(int rrn_bucket, bucket * bk)
+{
     int byteoffset = rrn_bucket*sizeof(bucket);
-    fseek();
+    FILE* arq_bucket = __abrir_arquivo(NOME_ARQUIVO_BUCKETS);
+    fseek(arq_bucket, byteoffset, SEEK_SET);
     fread(bk, sizeof(bucket), 1, arq_bucket);
-
 }
 
 int op_find(int key, int * rrn_found_bucket)
@@ -70,29 +74,96 @@ int op_find(int key, int * rrn_found_bucket)
     int address = make_address(key, diretorio.dir_prof);
     *rrn_found_bucket = diretorio.cells[address].bucket_ref;
     leia_bucket(*rrn_found_bucket, &bk);
-    if (/*Chave está em FOUND_BUCKET*/)
+    for (int i = 0; i < TAM_MAX_CHAVES; i++)
     {
-        return SUCCESS; 
+        if (bk.chaves[i] == key)
+        {
+            return SUCCESS;
+        }
     }
     return FAILURE;
 }
 
 int op_add(int key)
 {
-    int* found_bucket = NULL;
-    if (op_find(key, found_bucket) == SUCCESS)
+    int* rrn_found_bucket = NULL;
+    if (op_find(key, rrn_found_bucket) == SUCCESS)
     {
-        bk_add_key()
+        bucket bk;
+        leia_bucket(*rrn_found_bucket, &bk);
+        bk_add_key(bk, key);
+        return SUCCESS;
+    }
+    return FAILURE;
+
+}
+
+int bk_add_key(struct bucket bk, int key)
+{
+    if (bk.count < TAM_MAX_CHAVES) 
+    {
+        bk.chaves[bk.count+1] = key;
+    } 
+    else 
+    {
+        bk_split(bk);
     }
 
 }
 
-int bk_add_key(struct bucket bucket, int key);
+int bk_split(struct bucket bk)
+{
+    if (bk.prof == diretorio.dir_prof) 
+    {
+        dir_double();
 
-int bk_split(struct bucket bucket);
+        //Não entendi
+        // bucket novo_bucket;
+        // make_address()
+    }
+    return SUCCESS;
+}
 
-int dir_double();
+int dir_double()
+{
+    int tam_dir = pow(2, diretorio.dir_prof);
+    int novo_tam = 2*tam_dir;
+    directory novodir;
+    novodir.cells = malloc(sizeof(dir_cell)*novo_tam);
+    for (int i = 0; i < novo_tam; i++) {
+        novodir.cells[2*i].bucket_ref = diretorio.cells[i].bucket_ref;
+        novodir.cells[2*i+1].bucket_ref = diretorio.cells[i].bucket_ref;
+    }
+    free(diretorio.cells);
+    diretorio.cells = novodir.cells;
+    diretorio.dir_prof++;
+    return SUCCESS;
+}
 
-int find_new_range(struct bucket bucket, int* new_start, int* new_range);
+int find_new_range(struct bucket old_bk, int* new_start, int* new_end)
+{
+    int mask = 1;
+    int shared_address = make_address(old_bk.chaves[0], old_bk.prof);
+    int new_shared = shared_address << 1;
+    new_shared |= mask;
+    int bits_to_fill = diretorio.dir_prof - (old_bk.prof +1);
+    new_start = * new_end = new_shared;
+    for (int j = 0; j < bits_to_fill; j++)
+    {
+        *new_start = *new_start << 1;
+        *new_end = *new_end << 1;
+        *new_end = *new_end | mask;
+    }
+    return SUCCESS;
+}
 
-int dir_ins_bucket(struct bucket bucket, int start, int end);
+
+
+int dir_ins_bucket(int bucket_address, int start, int end)
+{
+    for(int j = start; j < end; j++) 
+    {
+        diretorio.cells[j].bucket_ref = bucket_address;
+    }
+    return SUCCESS;
+}
